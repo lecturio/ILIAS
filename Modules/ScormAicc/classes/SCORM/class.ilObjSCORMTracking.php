@@ -183,9 +183,10 @@ class ilObjSCORMTracking
 	}
 
 	public static function storeJsApiCmi($user_id, $obj_id, $data) {
-		global $ilLog, $ilDB;
-		
+		global $ilLog, $ilDB, $ilias;
+
 		$b_updateStatus=false;
+		$statusValue = '';
 		
 		$b_messageLog=false;
 		if ($ilLog->current_log_level == 30)
@@ -222,6 +223,7 @@ class ilObjSCORMTracking
 				if ($rec = $ilDB->fetchAssoc($set)) {
 					if ($a_data["left"] == 'cmi.core.lesson_status' && $a_data["right"] != $rec["rvalue"]) {
 						$b_updateStatus = true;
+                        $statusValue = $a_data["right"];
 					}
 					$ilDB->update('scorm_tracking',
 						array(
@@ -243,6 +245,7 @@ class ilObjSCORMTracking
 				else {
 					if ($a_data["left"] == 'cmi.core.lesson_status') {
 						$b_updateStatus = true;
+                        $statusValue = $a_data["right"];
 					}
 					$ilDB->insert('scorm_tracking', array(
 						'obj_id'		=> array('integer', $obj_id),
@@ -259,7 +262,26 @@ class ilObjSCORMTracking
 				}
 			}
 		}
-		
+
+        if ($statusValue != '') {
+            $trackingUrl = $ilias->ini->readVariable("tracking", "scorm_progress_track_url");
+            $refId = $_GET["ref_id"];
+            if ($trackingUrl) {
+                $postData = sprintf('user_id=%s&package_id=%s&learning_state=%s', $user_id, $refId, $statusValue);
+                // setup the curl
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $trackingUrl);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+                // grab URL and pass it to the browser
+                $responseContent = curl_exec($ch);
+                // close cURL resource, and free up system resources
+                curl_close($ch);
+            }
+        }
+
 		// update status
 		// if ($b_updateStatus == true) {
 			// include_once("./Services/Tracking/classes/class.ilLPStatusWrapper.php");	
