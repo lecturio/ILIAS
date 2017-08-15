@@ -69,9 +69,7 @@ $frontend->authenticate();
 switch($status->getStatus())
 {
     case ilAuthStatus::STATUS_AUTHENTICATED:
-        echo "STATUS_AUTHENTICATED";
         header('Location: ' . rtrim($webProxyBaseUrl, '/') . '/ilias.php?baseClass=ilSAHSPresentationGUI&ref_id=' . $referenceId);
-        ilLoggerFactory::getLogger('auth')->debug('Authentication successful; Redirecting to starting page.');
         exit();
 
     case ilAuthStatus::STATUS_CODE_ACTIVATION_REQUIRED:
