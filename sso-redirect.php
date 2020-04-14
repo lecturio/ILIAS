@@ -11,8 +11,16 @@ ilInitialisation::initILIAS();
 
 /* @global $ilias */
 // get the credentials service url of the foreign system
-$getCredentialsUrl = $ilias->ini->readVariable("sso", "get_credentials_url");
-$webProxyBaseUrl = $ilias->ini->readVariable("webproxy", "base_url");
+
+$webproxyDefaultPath = $ilias->ini->readVariable("webproxy", "default_path");
+$getCredentialsPath = $ilias->ini->readVariable("sso", "get_credentials_path");
+
+$webproxyDomain = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $ilias->ini->readVariable("webproxy", "default_domain");
+
+$protocol = 'https://';
+$getCredentialsUrl = sprintf('%s%s%s', $protocol, $webproxyDomain, $getCredentialsPath);
+$webProxyBaseUrl = sprintf('%s%s%s', $protocol, $webproxyDomain, $webproxyDefaultPath);
+
 // get token parameter and reference id from the request
 $token = isset($_REQUEST['token']) ? $_REQUEST['token'] : false;
 $referenceId = (int) $_REQUEST['ref_id'];

@@ -264,7 +264,11 @@ class ilObjSCORMTracking
 		}
 
         if ($statusValue != '') {
-            $trackingUrl = $ilias->ini->readVariable("tracking", "scorm_progress_track_url");
+			$webproxyDomain = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $ilias->ini->readVariable("webproxy", "default_domain");
+			$trackingPath = $ilias->ini->readVariable("tracking", "scorm_progress_track_path");
+			$protocol = 'https://';
+			$trackingUrl = sprintf('%s%s%s', $protocol, $webproxyDomain, $trackingPath);
+
             $refId = $_GET["ref_id"];
             if ($trackingUrl) {
                 $postData = sprintf('user_id=%s&package_id=%s&learning_state=%s', $user_id, $refId, $statusValue);
